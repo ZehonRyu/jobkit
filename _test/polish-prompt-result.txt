@@ -1,0 +1,5 @@
+PASS 带 JD：公司岗位入提示词
+PASS 带 JD：关键词入提示词
+PASS 带 JD：正文摘录入提示词
+PASS 铁律保留（防借 JD 加戏）
+PASS 无 JD：降级提示

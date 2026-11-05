@@ -1,0 +1,26 @@
+# OS junk
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Local test outputs (regression baseline selfqa.json is kept on purpose)
+*.log
+out.txt
+dom*.html
+
+# 本机密钥，绝不入库
+config.json
+
+# 本地私有数据：真实档案备份、含个人内容的自测报告，绝不入库
+_backup/
+自测报告.md
+_real/
+
+# Python
+__pycache__/
+*.pyc

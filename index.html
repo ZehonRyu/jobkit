@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>求职工坊 · 母版档案 / JD 适配 / 简历生成 / 模拟面试</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">工</div>
+    <div>
+      <h1>求职工坊</h1>
+      <p>母版档案 · JD 适配 · 简历生成 · 模拟面试</p>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button data-tab="profile" class="active">① 我的档案</button>
+    <button data-tab="jd">② JD 分析</button>
+    <button data-tab="resume">③ 生成简历</button>
+    <button data-tab="interview">④ 模拟面试</button>
+    <button data-tab="review">⑤ 复盘</button>
+    <button data-tab="ai">⑥ AI 助手</button>
+  </nav>
+  <div class="actions">
+    <span class="save-pill" id="save-pill">尚未保存</span>
+    <button class="btn small primary" id="btnSave">保存</button>
+    <button class="btn small" id="btnExport">导出档案</button>
+    <button class="btn small" id="btnImport">导入</button>
+    <button class="btn small" id="btnReset">清空重来</button>
+    <input type="file" id="fileImport" accept="application/json" hidden>
+  </div>
+</header>
+
+<main>
+  <!-- ============ ① 档案 ============ -->
+  <section id="tab-profile" class="tab-panel active">
+    <div class="card" id="completeness-card">
+      <div class="sec-title">
+        <div>
+          <h2>档案完整度</h2>
+          <div class="sub">这里列的是「简历里必须有、现在还没有」的东西，点条目跳到对应位置。</div>
+        </div>
+        <span id="completeness-pct" style="font-size:13px;font-weight:600;color:var(--text-2)"></span>
+      </div>
+      <div class="qbar"><i id="completeness-bar" style="width:0%"></i></div>
+      <div id="completeness-list" class="check-grid"></div>
+    </div>
+
+    <div class="card" id="timeline-card">
+      <div class="sec-title">
+        <div>
+          <h2>时间线补全</h2>
+          <div class="sub">项目和工作经历的时间最难补。这里按「工作年限 + 在职起点」生成一版建议，你核对后一键采用。</div>
+        </div>
+      </div>
+      <div class="row" style="align-items:flex-end;margin-bottom:10px">
+        <div class="f"><span>入职年月（起点）</span>
+          <span class="time-row"><span class="ym-range ym-single" id="tl-start"></span></span>
+        </div>
+        <button class="btn" id="btnPlanTime" style="flex:0 0 auto">重新计算</button>
+        <button class="btn primary" id="btnApplyAllTime" style="flex:0 0 auto">全部采用</button>
+      </div>
+      <div id="tl-plan"></div>
+      <div class="note" style="margin-top:10px">
+        建议值只是把「工作年限」铺成一条连续时间线，<b>不代表真实工期</b>。采用后会标「推定」，逐条确认（点 ✓）或改成真实值才算核实。
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">
+        <div>
+          <h2>基本信息</h2>
+          <div class="sub">留空的字段不会出现在简历里。数据只存在你自己的浏览器中，不上传任何服务器。</div>
+        </div>
+      </div>
+      <div id="basic-form" class="grid2"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">
+        <div>
+          <h2>技能池</h2>
+          <div class="sub">
+            <span class="truth-dot t-yes"></span>真做过（可写"负责/主导"）
+            <span class="truth-dot t-partial" style="margin-left:12px"></span>参与/设计过（只能写"参与/设计"）
+            <span class="truth-dot t-no" style="margin-left:12px"></span>只是了解（<b>不进简历</b>）
+          </div>
+        </div>
+        <button class="btn small" id="btnAddSkill">+ 添加技能</button>
+      </div>
+      <div id="skill-wrap"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">
+        <div>
+          <h2>项目经历</h2>
+          <div class="sub">每条动作一行。写"做了什么 + 怎么做的 + 结果"，结果没有真实数字就留空。</div>
+        </div>
+        <button class="btn small" id="btnAddProj">+ 添加项目</button>
+      </div>
+      <div id="proj-wrap"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title"><div><h2>工作经历 / 教育 / 补充</h2><div class="sub">工作时间线会单独成段</div></div></div>
+      <div id="work-wrap"></div>
+      <div class="sec-title" style="margin-top:18px"><h3 style="font-size:13px">教育</h3></div>
+      <div id="edu-form" class="grid2"></div>
+      <div class="sec-title" style="margin-top:18px"><h3 style="font-size:13px">其他（一行一条，如证书 / 语言 / 合规认知）</h3></div>
+      <textarea id="extras" rows="3" placeholder="一行一条"></textarea>
+      <div style="margin-top:10px"><button class="btn small" id="btnAddWork">+ 添加一段工作经历</button></div>
+    </div>
+  </section>
+
+  <!-- ============ ② JD ============ -->
+  <section id="tab-jd" class="tab-panel">
+    <div class="card">
+      <div class="sec-title">
+        <div>
+          <h2>JD 输入</h2>
+          <div class="sub">贴全文效果最好——摘要会丢掉关键词。也可以给链接尝试抓取。</div>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <label class="f"><span>公司</span><input id="jd-company" type="text" placeholder="如：某某科技"></label>
+        <label class="f"><span>岗位</span><input id="jd-title" type="text" placeholder="如：AI 应用工程师"></label>
+        <label class="f"><span>渠道 / 薪资</span><input id="jd-channel" type="text" placeholder="Boss / 内推 / 20-30K"></label>
+      </div>
+      <label class="f">
+        <span>JD 正文</span>
+        <textarea id="jd-text" class="jd-input" placeholder="把 JD 全文粘贴到这里：岗位职责、任职要求、加分项……"></textarea>
+      </label>
+      <div class="row" style="align-items:center">
+        <button class="btn primary" id="btnAnalyze" style="flex:0 0 auto">分析 JD</button>
+        <input id="jd-url" type="url" placeholder="或粘贴 JD 网页链接：https://..." style="flex:2 1 260px">
+        <button class="btn" id="btnFetch" style="flex:0 0 auto">从链接抓取</button>
+        <button class="btn ghost" id="btnDemoJd" style="flex:0 0 auto">填入示例 JD</button>
+        <button class="btn ghost" id="btnClearJd" style="flex:0 0 auto">清空</button>
+      </div>
+      <div class="note" style="margin-top:12px">
+        抓取走的是公共文本代理，只对公开页面有效；公众号、Boss、拉勾等有登录墙的页面抓不到，请直接复制正文。
+      </div>
+    </div>
+    <div id="jd-result"></div>
+  </section>
+
+  <!-- ============ ③ 简历 ============ -->
+  <section id="tab-resume" class="tab-panel">
+    <div class="card">
+      <div class="resume-toolbar">
+        <select id="resume-style" style="width:auto">
+          <option value="auto">摘要风格：跟随 JD</option>
+          <option value="ai">AI 应用 / LLM</option>
+          <option value="backend">Python 后端</option>
+          <option value="data">数据工程</option>
+          <option value="generic">通用</option>
+        </select>
+        <select id="resume-projcount" style="width:auto">
+          <option value="2">项目数：2 个</option>
+          <option value="3" selected>项目数：3 个</option>
+          <option value="4">项目数：4 个</option>
+        </select>
+        <button class="btn" id="btnGenResume">重新生成</button>
+        <button class="btn" id="btnCopyMd">复制 Markdown</button>
+        <button class="btn primary" id="btnPrint">打印 / 存 PDF</button>
+        <span style="flex:1"></span>
+        <span class="sub" id="resume-tag" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+      <div id="resume-quality" class="quality"></div>
+      <div id="resume-preview" class="resume-doc" contenteditable="true" spellcheck="false"></div>
+      <div class="note no-print" style="margin-top:14px">
+        简历区域可直接编辑，改完再打印。建议一页为限：超了先砍最不相关的项目，再砍 bullet 数量。
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ④ 面试 ============ -->
+  <section id="tab-interview" class="tab-panel">
+    <div class="card no-print">
+      <div class="sec-title">
+        <div>
+          <h2>开始一场模拟面试</h2>
+          <div class="sub">题目由「你的项目 + JD 关键词 + 通用题库」当场组合，每次都不一样。</div>
+        </div>
+      </div>
+      <div class="interview-setup">
+        <label class="f"><span>题量</span>
+          <select id="iv-count">
+            <option value="8">8 题（快速过）</option>
+            <option value="12" selected>12 题（标准）</option>
+            <option value="16">16 题（压力）</option>
+          </select>
+        </label>
+        <label class="f"><span>侧重方向</span>
+          <select id="iv-focus">
+            <option value="auto">跟随 JD</option>
+            <option value="技术">技术深挖</option>
+            <option value="项目">项目与贡献</option>
+            <option value="行为">行为与动机</option>
+            <option value="混合">混着来</option>
+          </select>
+        </label>
+        <label class="f"><span>每题限时</span>
+          <select id="iv-time">
+            <option value="90">90 秒</option>
+            <option value="120" selected>2 分钟</option>
+            <option value="180">3 分钟</option>
+            <option value="0">不限时</option>
+          </select>
+        </label>
+        <button class="btn primary" id="btnStartIv">开始</button>
+      </div>
+      <div id="iv-links" style="margin-top:12px"></div>
+    </div>
+    <div id="iv-session"></div>
+  </section>
+
+  <!-- ============ ⑤ 复盘 ============ -->
+  <section id="tab-review" class="tab-panel">
+    <div id="review-body"></div>
+  </section>
+
+  <!-- ============ ⑥ AI 助手 ============ -->
+  <section id="tab-ai" class="tab-panel">
+    <div class="ai-wrap">
+      <div class="ai-top">
+        <div class="ai-seg" id="ai-modes">
+          <button data-mode="build" class="active">对话建档案</button>
+          <button data-mode="polish">改写简历</button>
+          <button data-mode="mock">模拟面试</button>
+        </div>
+        <span class="ai-badge" id="ai-badge">检查中…</span>
+        <span class="ai-grow"></span>
+        <button class="btn small ghost" id="ai-clear">清空对话</button>
+        <button class="btn small" id="ai-config">配置 Key</button>
+      </div>
+
+      <div id="ai-setup" class="ai-setup hidden">
+        <div class="note" id="ai-key-state"></div>
+        <input id="ai-key" type="password" placeholder="sk-...（DeepSeek 的 API Key）" autocomplete="off">
+        <div class="ai-grid2">
+          <input id="ai-base" placeholder="接口地址，默认 https://api.deepseek.com" autocomplete="off">
+          <input id="ai-model" placeholder="模型，默认 deepseek-chat" autocomplete="off">
+        </div>
+        <div class="ai-setup-foot">
+          <button class="btn primary" id="ai-key-save">保存到本机</button>
+          <span class="ai-hint">Key 只写入本机 config.json，不进 git、不上传</span>
+        </div>
+      </div>
+
+      <div id="ai-chat" class="ai-chat"></div>
+
+      <div class="ai-input-row">
+        <textarea id="ai-input" rows="2" placeholder="直接输入，Enter 发送，Shift+Enter 换行"></textarea>
+        <button class="btn primary" id="ai-send">发送</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>数据仅保存在本机浏览器 · 建议每周导出一次备份</footer>
+<div class="toast" id="toast"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/ai.js"></script>
+</body>
+</html>
